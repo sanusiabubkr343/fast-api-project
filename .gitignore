@@ -1,0 +1,62 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.pyenv/
+pip-wheel-metadata/
+
+# Distribution / packaging
+*.egg-info/
+build/
+dist/
+.eggs/
+wheels/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Logs and debug files
+*.log
+
+# Environment variables
+.env
+
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# MacOS system files
+.DS_Store
+._*
+
+# Docker files
+*.dockerignore
+docker-compose.override.yml
+
+# Testing
+.coverage
+.tox/
+.nox/
+*.test
+*.tests
+.cache/
+pytest_cache/
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+# Pyre
+.pyre/

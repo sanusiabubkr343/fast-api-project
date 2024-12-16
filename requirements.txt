@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+tortoise-orm
+passlib
+python-jose
+pydantic
+aerich
+bcrypt
+python-dotenv
