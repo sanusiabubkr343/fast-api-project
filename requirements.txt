@@ -1,9 +1,8 @@
 fastapi
 uvicorn
-tortoise-orm
-passlib
-python-jose
+sqlalchemy
 pydantic
-aerich
-bcrypt
+python-jose
+passlib[bcrypt]
 python-dotenv
+alembic

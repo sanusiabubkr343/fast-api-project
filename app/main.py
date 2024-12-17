@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 from app.routers import auth, post
-from app.config import TORTOISE_ORM
+from app.database import TORTOISE_ORM
 
 
 app =FastAPI()

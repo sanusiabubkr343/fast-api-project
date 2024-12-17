@@ -1,27 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.schemas.post import (
-    CommentRespond,
-    PostComprehensiveResponse,
     PostCreate,
     PostResponse,
     CommentCreate,
+    CommentRespond,
     VoteAction,
     VoteResponse,
+    PostWithCommentsandVoteDetail,
 )
 from app.models.post import Post, Comment, Vote
 from app.utils.auth import decode_access_token
 from app.models.user import User
-from tortoise.exceptions import DoesNotExist
+from app.permission import is_admin
+from app.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 
 router = APIRouter()
 
 
-# Utility to get the current user
-async def get_current_user(token: str):
+async def get_current_user(token: str, db: AsyncSession = Depends(get_db)):
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Authentication Required or Invalid Token")
-    return await User.get(username=payload["sub"])
+    result = await db.execute(select(User).where(User.username == payload["sub"]))
+    user = result.scalars().first()
+    return user
 
 
 # Create a post

@@ -1,9 +1,13 @@
 from datetime import datetime
 from  pydantic import BaseModel
+from enum import Enum
+
+from app.schemas.user import UserResponse
 
 class PostCreate(BaseModel):
-  title:str
-  content :str
+    title: str
+    content: str
+
 
 class PostResponse(BaseModel):
     id: int
@@ -16,8 +20,9 @@ class PostResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class CommentCreate(BaseModel):
-    content :str
+    content: str
 
 
 class CommentRespond(BaseModel):
@@ -25,30 +30,36 @@ class CommentRespond(BaseModel):
     content: str
     author_id: int
     created_at: datetime
-   
 
 
-class PostComprehensiveResponse(BaseModel):
-    id: int
-    title: str
-    content: str
-    author_id: int
-    votes_count: int  #
-    comments:list[CommentRespond]
-    created_at: datetime
-    updated_at: datetime
+class VoteAction(str, Enum):
+    vote = "vote"
+    vote = "vote"
 
-    class Config:
-        orm_mode = True
+
+class VoteAction(BaseModel):
+    post_id: int
+    action: VoteAction
 
 
 class VoteResponse(BaseModel):
     post_id: int
     user_id: int
-    message:str
+    message: str
 
 
-# Schema for the voting action (request)
-class VoteAction(BaseModel):
-    post_id: int
-    action: str  # Can be "vote" or "unvote"
+class PostWithCommentsandVoteDetail(BaseModel):
+
+    id: int
+    title: str
+    content: str
+    author_id: int
+    author: UserResponse
+    comments: list[CommentRespond]
+    votes: list[VoteResponse]
+    vote_count: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
