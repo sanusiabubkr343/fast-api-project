@@ -19,7 +19,7 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return new_user
 
 
-@router.post("/login/")
+@router.post("/login/", response_model=dict)
 async def login(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
     result = await db.execute(select(User).where(User.username==user.username))
@@ -29,4 +29,4 @@ async def login(user: UserCreate, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
     access_token = create_access_token({"sub": db_user.username, "role": db_user})
-    return  {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", **UserResponse(db_user)}
