@@ -1,13 +1,16 @@
 from fastapi import FastAPI
-from tortoise.contrib.fastapi import register_tortoise
-from app.routers import auth, post
-from app.database import TORTOISE_ORM
+from .database import engine
+from .models import post, user
+
+from app.routers.auth import router as AuthRouters
+from app.routers.post import router as PostRouter
 
 
-app =FastAPI()
+# create table
+post.Base.metadata.create_all(bind=engine)
+user.Base.metadata.create_all(bind=engine)
 
-app.include_router(auth.router,prefix="/api/v1/auth")
-app.include_router(post.router, prefix="/api/v1/posts")
+app = FastAPI()
 
-
-register_tortoise(app,config=TORTOISE_ORM,generate_schemas=True)
+app.include_router(AuthRouters, prefix="/api/v1/auth")
+app.include_router(PostRouter, prefix="/api/v1/posts")

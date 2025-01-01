@@ -18,7 +18,7 @@ class PostResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CommentCreate(BaseModel):
@@ -34,7 +34,7 @@ class CommentRespond(BaseModel):
 
 class VoteAction(str, Enum):
     vote = "vote"
-    vote = "vote"
+    unvote = "unvote"
 
 
 class VoteAction(BaseModel):
@@ -62,4 +62,4 @@ class PostWithCommentsandVoteDetail(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

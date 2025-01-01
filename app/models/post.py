@@ -1,10 +1,9 @@
 from sqlalchemy import Integer, Column, String, Text, ForeignKey, DateTime, func
-from app.models.base import Base
 from sqlalchemy.orm import relationship
 
 USER_TABLE_REFERENCE = "users.id"
 POST_TABLE_REFERENCE = "posts.id"
-
+from app.database import Base
 
 class Post(Base):
     __tablename__ = "posts"
@@ -34,7 +33,6 @@ class Comment(Base):
     author = relationship("User", back_populates="comments")
 
 
-# Vote Model
 class Vote(Base):
     __tablename__ = "votes"
 

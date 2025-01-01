@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from utils.auth import decode_access_token
+from app.utils.auth import decode_access_token
 from fastapi import Depends, HTTPException, Query, APIRouter, Request
 
 
