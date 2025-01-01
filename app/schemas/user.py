@@ -1,7 +1,10 @@
-from pydantic import BaseModel
+from typing import ClassVar
+from pydantic import BaseModel, field_validator, ValidationError
 from datetime import datetime
 import enum
+from sqlalchemy.orm import Session
 
+from app.models.user import User
 
 class UserRole(str, enum.Enum):
     admin = "admin"
@@ -12,6 +15,9 @@ class UserCreate(BaseModel):
     username: str
     password: str
     role: UserRole
+    
+
+    
 
 
 class UserResponse(BaseModel):
