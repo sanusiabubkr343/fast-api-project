@@ -15,14 +15,17 @@ class UserCreate(BaseModel):
     username: str
     password: str
     role: UserRole
-    
 
-    
+
+class Login(BaseModel):
+    username: str
+    password: str
 
 
 class UserResponse(BaseModel):
     id: int
     username: str
+    role: UserRole
     created_at: datetime
 
     class Config:

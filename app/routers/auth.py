@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import Login, UserCreate, UserResponse
 from app.models.user import User
 from app.utils.auth import hash_password, verify_password, create_access_token
 from app.database import get_db
@@ -22,14 +22,32 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-# @router.post("/login/", response_model=dict)
-# async def login(user: UserCreate, db: AsyncSession = Depends(get_db)):
+@router.post("/login/", response_model=dict)
+def login(user: Login, db: Session = Depends(get_db)):
 
-#     result = await db.execute(select(User).where(User.username==user.username))
-#     db_user = result.scalars().first()
+    db_user = db.query(User).filter(User.username == user.username).first()
 
-#     if not db_user and verify_password(user.password,db_user.password):
-#         raise HTTPException(status_code=401, detail="Authentication Failed")
+    if not db_user and verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=401, detail="Authentication Failed")
 
-#     access_token = create_access_token({"sub": db_user.username, "role": db_user})
-#     return {"access_token": access_token, "token_type": "bearer", **UserResponse(db_user)}
+    user_response = UserResponse.from_orm(db_user)
+    print(user_response)
+    access_token = create_access_token({"sub": db_user.username, "role": db_user.role.value})
+    return {"access_token": access_token, "token_type": "bearer", **user_response.dict()}
+
+
+@router.get("/users/", response_model=list[UserResponse])
+def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(User).filter().all()
+
+    return users
+
+
+@router.delete("/users/{user_id}/", status_code=204)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    db.delete(user)
+    db.commit()
+    return {"detail": "user deleted successfully"}
