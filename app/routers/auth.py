@@ -26,14 +26,15 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 def login(user: Login, db: Session = Depends(get_db)):
 
     db_user = db.query(User).filter(User.username == user.username).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-    if not db_user and verify_password(user.password, db_user.password):
+    if not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
     user_response = UserResponse.from_orm(db_user)
-    print(user_response)
     access_token = create_access_token({"sub": db_user.username, "role": db_user.role.value})
-    return {"access_token": access_token, "token_type": "bearer", **user_response.dict()}
+    return {"access_token": access_token, "token_type": "Bearer", **user_response.dict()}
 
 
 @router.get("/users/", response_model=list[UserResponse])
@@ -41,6 +42,13 @@ def get_all_users(db: Session = Depends(get_db)):
     users = db.query(User).filter().all()
 
     return users
+
+
+@router.get("/users/{user_id}/", response_model=UserResponse)
+def get_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    return user
 
 
 @router.delete("/users/{user_id}/", status_code=204)

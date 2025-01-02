@@ -1,9 +1,29 @@
-from sqlalchemy import Integer, Column, String, Text, ForeignKey, DateTime, func
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Enum,
+    DateTime,
+    Text,
+    ForeignKey,
+    func,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import relationship
-
-USER_TABLE_REFERENCE = "users.id"
-POST_TABLE_REFERENCE = "posts.id"
+from datetime import datetime
+import enum
 from app.database import Base
+
+
+class UserRole(enum.Enum):
+    admin = "admin"
+    regular = "regular"
+
+    @classmethod
+    def choices(cls):
+        return [role.value for role in cls]
+
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -11,7 +31,9 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(100), nullable=False)
     content = Column(Text, nullable=False)
-    author_id = Column(Integer, ForeignKey(USER_TABLE_REFERENCE), nullable=False)
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
@@ -25,8 +47,12 @@ class Comment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
-    post_id = Column(Integer, ForeignKey(POST_TABLE_REFERENCE), nullable=False)
-    author_id = Column(Integer, ForeignKey(USER_TABLE_REFERENCE), nullable=False)
+    post_id = Column(
+        Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     created_at = Column(DateTime, default=func.now())
 
     post = relationship("Post", back_populates="comments")
@@ -37,8 +63,14 @@ class Vote(Base):
     __tablename__ = "votes"
 
     id = Column(Integer, primary_key=True, index=True)
-    post_id = Column(Integer, ForeignKey(POST_TABLE_REFERENCE), nullable=False)
-    user_id = Column(Integer, ForeignKey(USER_TABLE_REFERENCE), nullable=False)
+    post_id = Column(
+        Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
 
     post = relationship("Post", back_populates="votes")
     user = relationship("User", back_populates="votes")
+
+    __table_args__ = (UniqueConstraint("post_id", "user_id", name="unique_post_user_vote"),)

@@ -1,10 +1,10 @@
 from math import ceil
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 
-async def paginate(db: AsyncSession, model, page_number: int, page_size: int, filters=None):
-    
+async def paginate(db: Session, model, page_number: int, page_size: int, filters=None):
+
     filters = filters or []
     query = select(model).where(*filters)
 

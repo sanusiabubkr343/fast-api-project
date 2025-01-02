@@ -53,7 +53,6 @@ class PostWithCommentsandVoteDetail(BaseModel):
     id: int
     title: str
     content: str
-    author_id: int
     author: UserResponse
     comments: list[CommentRespond]
     votes: list[VoteResponse]
