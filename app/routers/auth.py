@@ -1,10 +1,12 @@
-from fastapi import APIRouter, HTTPException, Depends
-from app.schemas.user import Login, UserCreate, UserResponse, UserRole
+from fastapi import APIRouter, HTTPException, Depends, Query
+from app.schemas.user import Login, PaginatedUserResponse, UserCreate, UserResponse, UserRole
 from app.models.user import User
 from app.utils.auth import hash_password, verify_password, create_access_token
 from app.database import get_db
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
+
+from app.utils.pagination import PaginationMeta, paginate
 
 
 router = APIRouter()
@@ -37,11 +39,25 @@ def login(user: Login, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "Bearer", **user_response.dict()}
 
 
-@router.get("/users/", response_model=list[UserResponse])
-def get_all_users(db: Session = Depends(get_db)):
-    users = db.query(User).filter().order_by(User.created_at.desc()).all()
+@router.get("/users/", response_model=PaginatedUserResponse)
+def get_all_users(
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+):
+    # Query to fetch all users with optional filtering
+    query = db.query(User).order_by(User.created_at.desc())
+    paginated_users = paginate(query, page, page_size)
 
-    return users
+    # Return paginated response
+    return PaginatedUserResponse(
+        meta=PaginationMeta(
+            current_page=paginated_users["current_page_number"],
+            total_pages=paginated_users["total_page_number"],
+            total_results=paginated_users["total_result"],
+        ),
+        users=paginated_users["data"],
+    )
 
 
 @router.get("/users/{user_id}/", response_model=UserResponse)

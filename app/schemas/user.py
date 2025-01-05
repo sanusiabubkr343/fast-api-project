@@ -3,7 +3,8 @@ from pydantic import BaseModel, field_validator, ValidationError
 from datetime import datetime
 import enum
 from sqlalchemy.orm import Session
-
+from typing import List
+from app.utils.pagination import PaginationMeta, paginate
 from app.models.user import User
 
 class UserRole(str, enum.Enum):
@@ -30,3 +31,8 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PaginatedUserResponse(BaseModel):
+    users: List[UserResponse]
+    meta: PaginationMeta

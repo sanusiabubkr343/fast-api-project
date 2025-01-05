@@ -1,8 +1,10 @@
 from datetime import datetime
 from pydantic import BaseModel
 from enum import Enum
+from typing import List
 
 from app.schemas.user import UserResponse
+from app.utils.pagination import PaginationMeta
 
 
 class PostCreate(BaseModel):
@@ -22,6 +24,11 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 
+class PaginatedPostResponse(BaseModel):
+    posts: List[PostResponse]
+    meta: PaginationMeta
+
+
 class CommentCreate(BaseModel):
     content: str
 
@@ -31,6 +38,14 @@ class CommentRespond(BaseModel):
     content: str
     author_id: int
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedCommentResponse(BaseModel):
+    comments: List[CommentRespond]
+    meta: PaginationMeta
 
 
 class VoteAction(str, Enum):

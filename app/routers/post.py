@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, requests
 from app.schemas.post import (
+    PaginatedCommentResponse,
+    PaginatedPostResponse,
+    PaginationMeta,
     PostCreate,
     PostResponse,
     CommentCreate,
@@ -34,23 +37,46 @@ def create_post(
     return post_obj
 
 
-@router.get("/my-posts/", response_model=list[PostResponse])
+@router.get("/my-posts/", response_model=PaginatedPostResponse)
 def list_user_posts(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
 ):
-    posts = db.query(Post).filter(Post.author_id == user.id).order_by(Post.updated_at.desc()).all()
+    query = db.query(Post).filter(Post.author_id == user.id).order_by(Post.updated_at.desc())
+    paginated_posts = paginate(query, page, page_size)
 
-    return posts
+    return PaginatedPostResponse(
+        meta=PaginationMeta(
+            current_page=paginated_posts["current_page_number"],
+            total_pages=paginated_posts["total_page_number"],
+            total_results=paginated_posts["total_result"],
+        ),
+        posts=paginated_posts["data"],
+    )
 
 
-@router.get("/list-all/", response_model=list[PostResponse])
+@router.get("/list-all/", response_model=PaginatedPostResponse)
 def list_post(
     has_permission=Depends(is_admin),
     db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
 ):
-    posts = db.query(Post).order_by(Post.updated_at.desc()).all()
-    return posts
+    # Query all posts
+    query = db.query(Post).order_by(Post.updated_at.desc())
+    paginated_posts = paginate(query, page, page_size)
+
+    # Return paginated data
+    return PaginatedPostResponse(
+        meta=PaginationMeta(
+            current_page=paginated_posts["current_page_number"],
+            total_pages=paginated_posts["total_page_number"],
+            total_results=paginated_posts["total_result"],
+        ),
+        posts=paginated_posts["data"],
+    )
 
 
 @router.get("/{post_id}/detail/", response_model=PostWithCommentsandVoteDetail)
@@ -162,22 +188,28 @@ def comment_on_post(
 
 
 # List comments for a specific post
-@router.get("/{post_id}/comments/", response_model=list[CommentRespond])
-def list_comments(post_id: int, db: Session = Depends(get_db)):
-
+@router.get("/{post_id}/comments/", response_model=PaginatedCommentResponse)
+def list_comments(
+    post_id: int,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+):
     post = db.query(Post).filter(Post.id == post_id).first()
-
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    comments = (
-        db.query(Comment)
-        .filter(Comment.post_id == post_id)
-        .options(joinedload(Comment.author))
-        .all()
-    )
+    query = db.query(Comment).filter(Comment.post_id == post_id).order_by(Comment.created_at.desc())
+    paginated_comments = paginate(query, page, page_size)
 
-    return comments
+    return PaginatedCommentResponse(
+        meta=PaginationMeta(
+            current_page=paginated_comments["current_page_number"],
+            total_pages=paginated_comments["total_page_number"],
+            total_results=paginated_comments["total_result"],
+        ),
+        comments=paginated_comments["data"],
+    )
 
 
 # Update a comment
