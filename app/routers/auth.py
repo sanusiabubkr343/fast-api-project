@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.schemas.user import Login, UserCreate, UserResponse
+from app.schemas.user import Login, UserCreate, UserResponse, UserRole
 from app.models.user import User
 from app.utils.auth import hash_password, verify_password, create_access_token
 from app.database import get_db
@@ -39,7 +39,7 @@ def login(user: Login, db: Session = Depends(get_db)):
 
 @router.get("/users/", response_model=list[UserResponse])
 def get_all_users(db: Session = Depends(get_db)):
-    users = db.query(User).filter().all()
+    users = db.query(User).filter().order_by(User.created_at.desc()).all()
 
     return users
 
@@ -47,7 +47,20 @@ def get_all_users(db: Session = Depends(get_db)):
 @router.get("/users/{user_id}/", response_model=UserResponse)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
 
+    return user
+
+
+@router.patch("/users/{user_id}/", response_model=UserResponse)
+def update_user_role(user_id: int, role: UserRole, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    user.role = role
+    db.commit()
+    db.refresh(user)
     return user
 
 

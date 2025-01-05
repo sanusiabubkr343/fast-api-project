@@ -1,8 +1,9 @@
 from datetime import datetime
-from  pydantic import BaseModel
+from pydantic import BaseModel
 from enum import Enum
 
 from app.schemas.user import UserResponse
+
 
 class PostCreate(BaseModel):
     title: str
@@ -45,7 +46,6 @@ class VoteAction(BaseModel):
 class VoteResponse(BaseModel):
     post_id: int
     user_id: int
-    message: str
 
 
 class PostWithCommentsandVoteDetail(BaseModel):
